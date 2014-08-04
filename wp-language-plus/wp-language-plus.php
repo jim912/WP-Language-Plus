@@ -4,7 +4,7 @@ Plugin Name: WP Language Plus
 Plugin URI: https://github.com/jim912/WP-Language-Plus
 Description: Add language packs from Dashboard. 
 Author: Hitoshi Omagari
-Version: 0.2
+Version: 0.3
 Author URI: http://www.warna.info/
 */
 
@@ -18,38 +18,41 @@ class WP_Language_Plus {
 	public function __construct() {
 		$plugin_data = get_file_data( __FILE__, array( 'version' => 'Version' ) );
 		$this->version = $plugin_data['version'];
-		add_action( 'admin_menu'           , array( $this, 'add_settings_field' ) );
-		add_action( 'wp_ajax_language_plus', array( $this, 'ajax_languages_install' ) );
+		add_action( 'admin_menu'              , array( $this, 'add_settings_field' ) );
+		add_action( 'personal_options'        , array( $this, 'user_language_setting' ) );
+		add_action( 'personal_options_update' , array( $this, 'update_language_setting' ) );
+		add_action( 'edit_user_profile_update', array( $this, 'update_language_setting' ) );
+		add_action( 'wp_ajax_language_plus'   , array( $this, 'ajax_languages_install' ) );
+		if ( is_admin() ) {
+			add_action( 'setup_theme'         , array( $this, 'add_locale_hook' ) );
+		}
 	}
 	
 	
 	public function add_settings_field() {
 		$this->page_hook = add_management_page( 'WP Language Plus', 'WP Language Plus', 'manage_options', basename( __FILE__ ), array( $this, 'lang_page' ) );
-		add_action( 'load-' . $this->page_hook, array( $this, 'install_language_packs' ) );
+		add_action( 'load-' . $this->page_hook, array( $this, 'load_language_packs' ) );
+		add_action( 'load-profile.php'        , array( $this, 'load_language_packs' ) );
+		add_action( 'load-user-edit.php'      , array( $this, 'load_language_packs' ) );
 		add_action( 'load-' . $this->page_hook, array( $this, 'enqueue' ) );
 	}
 	
 	
 	public function lang_page() {
-//		var_dump( get_filesystem_method() );
-		include ( dirname( __FILE__ ) . '/admin/admin.php' );
+		$language_upgrader = new Language_Pack_Upgrader;
+		ob_start();
+		$ret = $language_upgrader->fs_connect( array( WP_CONTENT_DIR, WP_LANG_DIR ) );
+		ob_end_clean();
+		if ( $ret ) {
+			include ( dirname( __FILE__ ) . '/admin/admin.php' );
+		} else {
+			include ( dirname( __FILE__ ) . '/admin/fs_error.php' );
+		}
 	}
 	
 	
-	public function install_language_packs() {
+	public function load_language_packs() {
 		require_once( ABSPATH ) . '/wp-admin/includes/upgrade.php';
-		$current_languages = get_available_languages();
-		$this->add_languages = array();
-		if ( isset( $_POST['add-langs'] ) && is_array( $_POST['add-langs'] ) ) {
-			check_admin_referer( 'lang-plus', 'lang-plus-nonce' );
-			$langs = stripslashes_deep( $_POST['add-langs'] );
-			foreach ( $langs as $lang ) {
-				$lang = wp_install_download_language_pack( $lang );
-				if ( $lang && ! in_array( $lang, $current_languages ) ) {
-					$this->add_languages[] = $lang;
-				}
-			}
-		}
 		$this->translations = wp_get_available_translations_from_api();
 		$this->installed_languages = get_available_languages();
 	}
@@ -87,13 +90,57 @@ class WP_Language_Plus {
 					$return[$installs[$key]->language] = $installs[$key]->native_name;
 				}
 			}
-			debug_log( json_encode( $return ) );
 			header( 'Content-Type: application/json; charset=utf-8' );
 			echo json_encode( $return );
 			exit;
 		}
 	}
 	
+
+	public function user_language_setting( $profileuser ) {
+		if ( ! $this->installed_languages ) { return; }
+		$selected = count( get_user_meta( $profileuser->ID, 'user_language' ) ) == 0 ? get_option( 'WPLANG' ) : get_user_meta( $profileuser->ID, 'user_language', true );
+?>
+	<tr>
+		<th>Dashboard Language</th>
+		<td>
+			<?php wp_dropdown_languages( array(
+				'name'      => 'user_language',
+				'id'        => 'user-language',
+				'selected'  => $selected,
+				'languages' => $this->installed_languages,
+			) ); ?>
+		</td>
+	</tr>
+<?php
+	}
+
+
+	public function update_language_setting( $user_id ) {
+		if ( isset( $_POST['user_language'] ) ) {
+			$post_user_language = stripslashes_deep( $_POST['user_language'] );
+			if ( in_array( $post_user_language, $this->installed_languages ) || $post_user_language === '' ) {
+				update_user_meta( $user_id, 'user_language', $post_user_language );
+			}
+		}
+	}
+
+
+	public function add_locale_hook() {
+		add_filter( 'locale', array( $this, 'user_locale' ) );
+	}
+
+
+	public function user_locale( $locale ) {
+		$user = wp_get_current_user();
+		if ( count( get_user_meta( $user->ID, 'user_language' ) ) != 0 ) {
+			$locale = get_user_meta( $user->ID, 'user_language', true );
+			if ( ! $locale ) {
+				$locale = 'en_US';
+			}
+		}
+		return $locale;
+	}
 	
 } // class end.
 new WP_Language_Plus;
