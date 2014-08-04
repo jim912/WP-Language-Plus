@@ -6,6 +6,7 @@ Description
 2. User can select language of admin panel.
 
 Installation
+
 1. Activate WP Language Plus from plugins page.
 2. Go [Tools] > [WP Language Plus] page, check languages and click install button.
 3. Dashboard Language avialable in User profile or edit page. select language and update.
