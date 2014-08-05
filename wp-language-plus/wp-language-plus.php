@@ -4,9 +4,16 @@ Plugin Name: WP Language Plus
 Plugin URI: https://github.com/jim912/WP-Language-Plus
 Description: Add language packs from Dashboard. 
 Author: Hitoshi Omagari
-Version: 0.3
+Version: 0.4
 Author URI: http://www.warna.info/
+Domain Path: /languages/
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
+
+require_once( dirname( __FILE__ ) . '/includes/activation_hooks.php' );
+register_activation_hook( __FILE__, 'activation_wp_language_plus' );
+register_deactivation_hook( __FILE__, 'deactivation_wp_language_plus' );
 
 class WP_Language_Plus {
 	private $page_hook;
@@ -18,6 +25,7 @@ class WP_Language_Plus {
 	public function __construct() {
 		$plugin_data = get_file_data( __FILE__, array( 'version' => 'Version' ) );
 		$this->version = $plugin_data['version'];
+		add_action( 'plugins_loaded'          , array( $this, 'load_textdomain' ) );
 		add_action( 'admin_menu'              , array( $this, 'add_settings_field' ) );
 		add_action( 'personal_options'        , array( $this, 'user_language_setting' ) );
 		add_action( 'personal_options_update' , array( $this, 'update_language_setting' ) );
@@ -26,6 +34,11 @@ class WP_Language_Plus {
 		if ( is_admin() ) {
 			add_action( 'setup_theme'         , array( $this, 'add_locale_hook' ) );
 		}
+	}
+
+
+	public function load_textdomain() {
+		load_plugin_textdomain( 'wp-language-plus', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 	}
 	
 	
@@ -39,6 +52,7 @@ class WP_Language_Plus {
 	
 	
 	public function lang_page() {
+		require_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
 		$language_upgrader = new Language_Pack_Upgrader;
 		ob_start();
 		$ret = $language_upgrader->fs_connect( array( WP_CONTENT_DIR, WP_LANG_DIR ) );
@@ -52,7 +66,7 @@ class WP_Language_Plus {
 	
 	
 	public function load_language_packs() {
-		require_once( ABSPATH ) . '/wp-admin/includes/upgrade.php';
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		$this->translations = wp_get_available_translations_from_api();
 		$this->installed_languages = get_available_languages();
 	}
@@ -66,7 +80,7 @@ class WP_Language_Plus {
 
 	public function ajax_languages_install() {
 		check_ajax_referer( 'admin-language-plus', 'nonce' );
-		require_once( ABSPATH ) . '/wp-admin/includes/upgrade.php';
+		require_once ( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		$this->translations = wp_get_available_translations_from_api();
 		$this->installed_languages = get_available_languages();
 		$langs = stripslashes_deep( $_POST['add-langs'] );
@@ -80,7 +94,7 @@ class WP_Language_Plus {
 		}
 
 		if ( $installs ) {
-			require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+			require_once ( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
 			$skin = new Automatic_Upgrader_Skin;
 			$upgrader = new Language_Pack_Upgrader( $skin );
 			$results = $upgrader->bulk_upgrade( $installs, array( 'clear_update_cache' => false ) );
@@ -102,7 +116,7 @@ class WP_Language_Plus {
 		$selected = count( get_user_meta( $profileuser->ID, 'user_language' ) ) == 0 ? get_option( 'WPLANG' ) : get_user_meta( $profileuser->ID, 'user_language', true );
 ?>
 	<tr>
-		<th>Dashboard Language</th>
+		<th><?php _e( 'Dashboard Language', 'wp-language-plus' ); ?></th>
 		<td>
 			<?php wp_dropdown_languages( array(
 				'name'      => 'user_language',

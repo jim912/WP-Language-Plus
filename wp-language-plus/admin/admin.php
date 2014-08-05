@@ -4,7 +4,7 @@
 		<div id="added-languages" class="updated">
 		</div>
 <?php if ( $this->translations ) : ?>
-		<h3>Avilable Languages</h3>
+		<h3><?php _e( 'Avilable Languages', 'wp-language-plus' ); ?></h3>
 		<form action="" method="post" id="add-lang-form">
 			<?php wp_nonce_field( 'lang-plus', 'lang-plus-nonce' ); ?>
 			<ul id="avilable-languages">
@@ -19,7 +19,7 @@
 				</li>
 <?php endforeach; ?>
 			</ul>
-			<?php submit_button( 'Install' ); ?>
+			<?php submit_button( __( 'Install', 'wp-language-plus' ) ); ?>
 		</form>
 <?php else : ?>
 		<p>No languages avilable.</p>

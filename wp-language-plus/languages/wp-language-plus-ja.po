@@ -1,0 +1,31 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Language Plus\n"
+"POT-Creation-Date: 2014-08-05 12:56+0900\n"
+"PO-Revision-Date: 2014-08-05 13:08+0900\n"
+"Last-Translator: Hitoshi Omagari\n"
+"Language-Team: jim912\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.7\n"
+"X-Poedit-KeywordsList: _e;gettext;gettext_noop;__\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: wp-language-plus\n"
+
+#: wp-language-plus.php:119
+msgid "Dashboard Language"
+msgstr "管理画面表示言語"
+
+#: wp-language-plus/admin/admin.php:7
+msgid "Avilable Languages"
+msgstr "言語パッケージ"
+
+#: wp-language-plus/admin/admin.php:22
+msgid "Install"
+msgstr "インストール"
+
+#: wp-language-plus/admin/fs_error.php:7
+msgid "<strong>File system error.</strong>"
+msgstr "<strong>ファイルシステムエラー</strong>"
