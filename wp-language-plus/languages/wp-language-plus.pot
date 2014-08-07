@@ -14,7 +14,15 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: wp-language-plus\n"
 
-#: wp-language-plus.php:119
+#: wp-language-plus.php:46
+msgid "Languages"
+msgstr ""
+
+#: wp-language-plus.php:79
+msgid "{%installed_languages%} installed."
+msgstr ""
+
+#: wp-language-plus.php:123
 msgid "Dashboard Language"
 msgstr ""
 

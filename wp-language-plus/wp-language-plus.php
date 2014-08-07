@@ -3,8 +3,8 @@
 Plugin Name: WP Language Plus
 Plugin URI: https://github.com/jim912/WP-Language-Plus
 Description: Add language packs from Dashboard. 
-Author: Hitoshi Omagari
-Version: 0.4
+Author: jim912
+Version: 0.4.1
 Author URI: http://www.warna.info/
 Domain Path: /languages/
 License: GNU General Public License v2 or later
@@ -32,7 +32,7 @@ class WP_Language_Plus {
 		add_action( 'edit_user_profile_update', array( $this, 'update_language_setting' ) );
 		add_action( 'wp_ajax_language_plus'   , array( $this, 'ajax_languages_install' ) );
 		if ( is_admin() ) {
-			add_action( 'setup_theme'         , array( $this, 'add_locale_hook' ) );
+			add_action( 'plugins_loaded'         , array( $this, 'add_locale_hook' ), 0 );
 		}
 	}
 
@@ -43,14 +43,14 @@ class WP_Language_Plus {
 	
 	
 	public function add_settings_field() {
-		$this->page_hook = add_management_page( 'WP Language Plus', 'WP Language Plus', 'manage_options', basename( __FILE__ ), array( $this, 'lang_page' ) );
+		$this->page_hook = add_management_page( __( 'Languages', 'wp-language-plus' ), __( 'Languages', 'wp-language-plus' ), 'manage_options', basename( __FILE__ ), array( $this, 'lang_page' ) );
 		add_action( 'load-' . $this->page_hook, array( $this, 'load_language_packs' ) );
 		add_action( 'load-profile.php'        , array( $this, 'load_language_packs' ) );
 		add_action( 'load-user-edit.php'      , array( $this, 'load_language_packs' ) );
 		add_action( 'load-' . $this->page_hook, array( $this, 'enqueue' ) );
 	}
-	
-	
+
+
 	public function lang_page() {
 		require_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
 		$language_upgrader = new Language_Pack_Upgrader;
@@ -63,8 +63,8 @@ class WP_Language_Plus {
 			include ( dirname( __FILE__ ) . '/admin/fs_error.php' );
 		}
 	}
-	
-	
+
+
 	public function load_language_packs() {
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		$this->translations = wp_get_available_translations_from_api();
@@ -74,9 +74,13 @@ class WP_Language_Plus {
 
 	public function enqueue() {
 		wp_enqueue_script( 'admin-language-plus', plugin_dir_url( __FILE__ ) . 'js/wp-language-plus.js', array( 'jquery' ), $this->version, true );
-		wp_localize_script( 'admin-language-plus', 'languagePlusNonce', array( 'nonce' => wp_create_nonce( 'admin-language-plus' ) ) );
+		wp_localize_script( 'admin-language-plus', 'languagePlus', array(
+			'nonce'     => wp_create_nonce( 'admin-language-plus' ),
+			'installed' => __( '{%installed_languages%} installed.', 'wp-language-plus' ),
+		) );
 		wp_enqueue_style( 'admin-language-plus', plugin_dir_url( __FILE__ ) . 'css/wp-language-plus.css', array(), $this->version );
 	}
+
 
 	public function ajax_languages_install() {
 		check_ajax_referer( 'admin-language-plus', 'nonce' );
@@ -109,7 +113,7 @@ class WP_Language_Plus {
 			exit;
 		}
 	}
-	
+
 
 	public function user_language_setting( $profileuser ) {
 		if ( ! $this->installed_languages ) { return; }
@@ -155,6 +159,5 @@ class WP_Language_Plus {
 		}
 		return $locale;
 	}
-	
 } // class end.
 new WP_Language_Plus;

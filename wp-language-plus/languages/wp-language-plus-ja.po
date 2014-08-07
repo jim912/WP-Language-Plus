@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WP Language Plus\n"
 "POT-Creation-Date: 2014-08-05 12:56+0900\n"
-"PO-Revision-Date: 2014-08-05 13:08+0900\n"
+"PO-Revision-Date: 2014-08-07 20:05+0900\n"
 "Last-Translator: Hitoshi Omagari\n"
 "Language-Team: jim912\n"
 "Language: ja\n"
@@ -14,7 +14,15 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: wp-language-plus\n"
 
-#: wp-language-plus.php:119
+#: wp-language-plus.php:46
+msgid "Languages"
+msgstr "言語"
+
+#: wp-language-plus.php:79
+msgid "{%installed_languages%} installed."
+msgstr "{%installed_languages%} をインストールしました。"
+
+#: wp-language-plus.php:123
 msgid "Dashboard Language"
 msgstr "管理画面表示言語"
 
